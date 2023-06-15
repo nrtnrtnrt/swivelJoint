@@ -4,12 +4,15 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui charts serialport network
+#serialbus
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = swivelJoint
 TEMPLATE = app
+
+LIBS += -Ldll -lws2_32
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
@@ -25,10 +28,26 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        widget.cpp
+        widget.cpp \
+    thread.cpp \
+    src/modbus.c \
+    src/modbus-data.c \
+    src/modbus-rtu.c \
+    src/modbus-tcp.c
 
 HEADERS += \
-        widget.h
+        widget.h \
+    thread.h \
+    src/modbus.h \
+    src/modbus-private.h \
+    src/modbus-rtu.h \
+    src/modbus-rtu-private.h \
+    src/modbus-tcp.h \
+    src/modbus-tcp-private.h \
+    src/modbus-version.h
 
 FORMS += \
         widget.ui
+
+DISTFILES += \
+    src/modbus.lib
