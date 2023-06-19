@@ -25,7 +25,7 @@ void SerialThread::run()
 
     while(1)
     {
-
+        serial->waitForReadyRead(2000);
     }
 
 }
@@ -39,6 +39,13 @@ void SerialThread::ReadData()
 //        QString str = ui->textEdit->toPlainText();
 //        str += tr(buf);
         //定义一个存放数据的东西
+        QString necessary = buf.mid(0,3);
+        qDebug() << "necessary:" << necessary;
+        int b = necessary.toInt();
+        qDebug() << "b:" << b;
+
+        emit serial_signal(b);
+
     }
 
     buf.clear();
@@ -72,6 +79,45 @@ RecvThread::RecvThread(QObject *parent) : QThread(parent)
 
 void RecvThread::run()
 {
+    bool is_timeout;
+    char buf[1100] = {0};
+    int len = 0;
+    recv_server = new QTcpServer();
+    recv_server->listen(QHostAddress::Any, 21123);
+    qDebug() << "recvthread waiting connect.....";
+
+    recv_server->waitForNewConnection(50000, &is_timeout);
+    if(is_timeout == true)
+    {
+        qDebug() << "recvthread time out";
+        return;
+    }
+    recv_socket = recv_server->nextPendingConnection();
+    qDebug() << "recvthread new connection";
+    while(1)
+    {
+
+        memset(buf, 0, 10);
+        recv_socket->waitForReadyRead(-1); //没有东西就阻塞
+        len = recv_socket->read(buf, 10);
+
+//        emit read_plc();
+
+        if(len < 0)
+        {
+            qDebug() << "receive data error";
+        }
+        else
+        {
+            qDebug() << "receive :" << len;
+            FILE* fp;
+            fp = fopen("C:/Users/USER/Desktop/1.txt", "a+");
+            fwrite(buf, 1, 1, fp);
+            fclose(fp);
+        }
+
+//        emit send_sortingResult(buf);
+    }
 
 }
 

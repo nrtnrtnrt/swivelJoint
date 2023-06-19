@@ -22,6 +22,7 @@ protected:
     void run();
 
 signals:
+    void serial_signal(int);
 
 public slots:
 

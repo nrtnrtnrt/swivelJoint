@@ -9,9 +9,12 @@ Widget::Widget(QWidget *parent) :
 {
     ui->setupUi(this);
 
+//    serial_thread = new SerialThread();
+//    serial_thread->start();
+
     m_timer0 = new QTimer();
     m_timer0->setSingleShot(false);
-    m_timer0->start(1000);
+//    m_timer0->start(1000);
 
 /************connect******************/
     connetSignals();
@@ -20,6 +23,10 @@ Widget::Widget(QWidget *parent) :
 
 /************绘制曲线******************/
     CurvePlotting();
+
+
+
+
 
 }
 
@@ -33,12 +40,17 @@ void Widget::connetSignals()
     //Timer
     connect(m_timer0, SIGNAL(timeout()), this, SLOT(mTimeout()));
 
+    //thread signal
+//    connect(serial_thread, SIGNAL(serial_signal(int)), this, SLOT(serial_signal_0(int)));
+
+
     //tab2
     connect(ui->pushButton_0,SIGNAL(clicked()), this, SLOT(tab2_start()));
     connect(ui->pushButton_1,SIGNAL(clicked()), this, SLOT(tab2_pb1()));
     connect(ui->pushButton_2,SIGNAL(clicked()), this, SLOT(tab2_pb2()));
     connect(ui->pushButton_3,SIGNAL(clicked()), this, SLOT(tab2_pb3()));
     connect(ui->pushButton_4,SIGNAL(clicked()), this, SLOT(tab2_pb4()));
+    connect(ui->pushButton_5,SIGNAL(clicked()), this, SLOT(tab2_pb5()));
 }
 
 void Widget::UiStyle()
@@ -68,6 +80,7 @@ void Widget::UiStyle()
     Tab2_HBoxLay2->addWidget(ui->pushButton_2);
     Tab2_HBoxLay2->addWidget(ui->pushButton_3);
     Tab2_HBoxLay2->addWidget(ui->pushButton_4);
+    Tab2_HBoxLay2->addWidget(ui->pushButton_5);
 
     //垂直布局
     Tab2_VBoxlay = new QVBoxLayout();
@@ -94,20 +107,25 @@ void Widget::CurvePlotting()
     AxisY0 = new QValueAxis();
     AxisY1 = new QValueAxis();
     AxisY2 = new QValueAxis();
+    AxisY3 = new QValueAxis();
 
 //2
     LineSeries0 = new QSplineSeries();
 //    LineSeries0->setPen(QPen(QColor(255, 0, 0), 3));
     LineSeries0->setName("转速");
     LineSeries1 = new QSplineSeries();
-    LineSeries1->setName("压力");
+    LineSeries1->setName("振动");
     LineSeries2 = new QSplineSeries();
-
+    LineSeries2->setName("扭矩");
+    LineSeries3 = new QSplineSeries();
+    LineSeries3->setName("功率");
 //3
     Chart->setTitle("实时动态曲线示例");
+
     Chart->addSeries(LineSeries0);
     Chart->addSeries(LineSeries1);
     Chart->addSeries(LineSeries2);
+    Chart->addSeries(LineSeries3);
 
 /*****************YO轴设置  转速****************************/
     /* 设置显示格式 */
@@ -121,7 +139,7 @@ void Widget::CurvePlotting()
     /* 将splineSeries附加于y轴上 */
     LineSeries0->attachAxis(AxisY0);
 
-/*****************Y1轴设置   压力****************************/
+/*****************Y1轴设置   振动****************************/
     /* 设置显示格式 */
     AxisY1->setLabelFormat("%i");
     /* y轴标题 */
@@ -144,6 +162,17 @@ void Widget::CurvePlotting()
     AxisY2->setRange(-1, MAX_Y2);
     /* 将splineSeries附加于y轴上 */
     LineSeries2->attachAxis(AxisY2);
+/*****************Y3轴设置   功率****************************/
+    /* 设置显示格式 */
+    AxisY3->setLabelFormat("%i");
+    /* y轴标题 */
+    AxisY3->setTitleText("功率W");
+    /* y轴标题位置（设置坐标轴的方向） */
+    Chart->addAxis(AxisY3, Qt::AlignLeft);
+    /* 设置y轴范围 */
+    AxisY3->setRange(-1, MAX_Y3);
+    /* 将splineSeries附加于y轴上 */
+    LineSeries3->attachAxis(AxisY3);
 //4 Y?
 
 /*****************X轴设置****************************/
@@ -160,7 +189,7 @@ void Widget::CurvePlotting()
     LineSeries0->attachAxis(AxisX0);
     LineSeries1->attachAxis(AxisX0);
     LineSeries2->attachAxis(AxisX0);
-
+    LineSeries3->attachAxis(AxisX0);
 
 
 /*****************chart设置****************************/
@@ -207,6 +236,7 @@ void Widget::mTimeout()
         LineSeries0->remove(0);
         LineSeries1->remove(0);
         LineSeries2->remove(0);
+        LineSeries3->remove(0);
 
         Chart->axisX()->setMin(PointCount0 - MAX_X);
         Chart->axisX()->setMax(PointCount0);                    // 更新X轴范围
@@ -215,6 +245,7 @@ void Widget::mTimeout()
     LineSeries0->append(QPointF(PointCount0, rand() % MAX_Y0));  // 更新显示（随机生成10以内的一个数）
     LineSeries1->append(QPointF(PointCount0, rand() % MAX_Y1));  // 更新显示（随机生成10以内的一个数）
     LineSeries2->append(QPointF(PointCount0, rand() % MAX_Y2));  // 更新显示（随机生成10以内的一个数）
+    LineSeries3->append(QPointF(PointCount0, rand() % MAX_Y3));  // 更新显示（随机生成10以内的一个数）
     PointCount0++;
 
     QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
@@ -234,10 +265,12 @@ void Widget::tab2_pb1()
     LineSeries0->show();
     LineSeries1->hide();
     LineSeries2->hide();
+    LineSeries3->hide();
 
     AxisY0->show();
     AxisY1->hide();
     AxisY2->hide();
+    AxisY3->hide();
 }
 
 void Widget::tab2_pb2()
@@ -245,10 +278,13 @@ void Widget::tab2_pb2()
     LineSeries1->show();
     LineSeries0->hide();
     LineSeries2->hide();
+    LineSeries3->hide();
 
     AxisY1->show();
     AxisY0->hide();
     AxisY2->hide();
+    AxisY3->hide();
+
 }
 
 void Widget::tab2_pb3()
@@ -256,19 +292,51 @@ void Widget::tab2_pb3()
     LineSeries2->show();
     LineSeries1->hide();
     LineSeries0->hide();
+    LineSeries3->hide();
 
     AxisY2->show();
     AxisY1->hide();
     AxisY0->hide();
+    AxisY3->hide();
 }
 
 void Widget::tab2_pb4()
 {
+
+    LineSeries3->show();
+    LineSeries1->hide();
+    LineSeries0->hide();
+    LineSeries2->hide();
+
+    AxisY3->show();
+    AxisY1->hide();
+    AxisY0->hide();
+    AxisY2->hide();
+}
+
+void Widget::tab2_pb5()
+{
     LineSeries0->show();
     LineSeries1->show();
     LineSeries2->show();
+    LineSeries3->show();
 
     AxisY2->show();
     AxisY1->show();
     AxisY0->show();
+    AxisY3->show();
+}
+
+void Widget::serial_signal_0(int b)
+{
+    if(PointCount0 > MAX_X)
+    {
+        LineSeries0->remove(0);
+
+        Chart->axisX()->setMin(PointCount0 - MAX_X);
+        Chart->axisX()->setMax(PointCount0);                    // 更新X轴范围
+
+    }
+    LineSeries0->append(QPointF(PointCount0, b));  // 更新显示（随机生成10以内的一个数）
+
 }
